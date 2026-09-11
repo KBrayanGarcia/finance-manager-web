@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Plus, Trash2, Edit2, Tags, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Tags } from 'lucide-react';
 import {
   useCategories,
   useCreateCategory,
@@ -13,27 +10,13 @@ import {
 import { PageContainer } from '@/components/layout/page-container';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+  CategoryCreateDialog,
+  type CategoryFormValues,
+} from '@/components/categories/CategoryCreateDialog';
+import { CategoryEditDialog } from '@/components/categories/CategoryEditDialog';
+import { CategoryCard } from '@/components/categories/CategoryCard';
 import type { Category, CategoryType } from '@/types/category.types';
-
-const categorySchema = z.object({
-  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  type: z.enum(['EXPENSE', 'INCOME']),
-  color: z.string(),
-});
-
-type CategoryFormValues = z.infer<typeof categorySchema>;
 
 export const Route = createFileRoute('/_authenticated/categories')({
   component: CategoriesPage,
@@ -49,30 +32,22 @@ function CategoriesPage(): React.ReactElement {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-  const createForm = useForm<CategoryFormValues>({
-    resolver: zodResolver(categorySchema),
-    defaultValues: {
-      name: '',
-      type: 'EXPENSE',
-      color: '#EF4444',
-    },
-  });
-
   const handleCreateSubmit = async (values: CategoryFormValues) => {
     await createCategoryMutation.mutateAsync(values);
-    createForm.reset();
     setIsCreateOpen(false);
   };
 
-  const handleUpdateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editingCategory) return;
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get('name') as string;
-    const color = formData.get('color') as string;
-
+  const handleUpdateSubmit = async ({
+    id,
+    name,
+    color,
+  }: {
+    readonly id: string;
+    readonly name: string;
+    readonly color: string;
+  }) => {
     await updateCategoryMutation.mutateAsync({
-      id: editingCategory.id,
+      id,
       payload: { name, color },
     });
     setEditingCategory(null);
@@ -89,67 +64,12 @@ function CategoriesPage(): React.ReactElement {
       title="Categorías"
       description="Organiza y clasifica tus transacciones de ingresos y gastos"
       actions={
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Nueva Categoría
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Crear Categoría</DialogTitle>
-              <DialogDescription>Define una etiqueta para clasificar tus movimientos</DialogDescription>
-            </DialogHeader>
-
-            <form onSubmit={createForm.handleSubmit(handleCreateSubmit)} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-medium" htmlFor="cat-name">
-                  Nombre de la Categoría
-                </label>
-                <Input
-                  id="cat-name"
-                  placeholder="Ej. Supermercado, Salario"
-                  {...createForm.register('name')}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Tipo de Categoría</label>
-                <Select
-                  defaultValue="EXPENSE"
-                  onValueChange={(val) => createForm.setValue('type', val as CategoryType)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona el tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EXPENSE">Gasto (EXPENSE)</SelectItem>
-                    <SelectItem value="INCOME">Ingreso (INCOME)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium" htmlFor="cat-color">
-                  Color Identificador
-                </label>
-                <Input
-                  id="cat-color"
-                  type="color"
-                  className="h-9 p-1 cursor-pointer"
-                  {...createForm.register('color')}
-                />
-              </div>
-
-              <DialogFooter>
-                <Button type="submit" disabled={createCategoryMutation.isPending}>
-                  {createCategoryMutation.isPending ? 'Guardando...' : 'Crear Categoría'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <CategoryCreateDialog
+          isOpen={isCreateOpen}
+          onOpenChange={setIsCreateOpen}
+          onSubmit={handleCreateSubmit}
+          isSubmitting={createCategoryMutation.isPending}
+        />
       }
     >
       <div className="space-y-6">
@@ -193,91 +113,24 @@ function CategoriesPage(): React.ReactElement {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((category) => {
-              const isIncome = category.type === 'INCOME';
-
-              return (
-                <Card key={category.id} className="border-border shadow-sm flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                        isIncome ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
-                      }`}
-                    >
-                      {isIncome ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-foreground m-0">{category.name}</h4>
-                      <Badge variant={isIncome ? 'success' : 'outline'} className="mt-1 text-[10px]">
-                        {isIncome ? 'Ingreso' : 'Gasto'}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                      onClick={() => setEditingCategory(category)}
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                      onClick={() => handleDelete(category.id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </Card>
-              );
-            })}
+            {categories.map((category) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                onEdit={setEditingCategory}
+                onDelete={handleDelete}
+              />
+            ))}
           </div>
         )}
       </div>
 
-      {/* Modal de edición */}
-      <Dialog open={Boolean(editingCategory)} onOpenChange={(open) => !open && setEditingCategory(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Categoría</DialogTitle>
-            <DialogDescription>Modifica el nombre o color de la categoría</DialogDescription>
-          </DialogHeader>
-
-          {editingCategory && (
-            <form onSubmit={handleUpdateSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-medium" htmlFor="edit-cat-name">
-                  Nombre
-                </label>
-                <Input id="edit-cat-name" name="name" defaultValue={editingCategory.name} required />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium" htmlFor="edit-cat-color">
-                  Color
-                </label>
-                <Input
-                  id="edit-cat-color"
-                  name="color"
-                  type="color"
-                  className="h-9 p-1 cursor-pointer"
-                  defaultValue={editingCategory.color || '#EF4444'}
-                />
-              </div>
-
-              <DialogFooter>
-                <Button type="submit" disabled={updateCategoryMutation.isPending}>
-                  {updateCategoryMutation.isPending ? 'Actualizando...' : 'Guardar Cambios'}
-                </Button>
-              </DialogFooter>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
+      <CategoryEditDialog
+        category={editingCategory}
+        onClose={() => setEditingCategory(null)}
+        onSubmit={handleUpdateSubmit}
+        isSubmitting={updateCategoryMutation.isPending}
+      />
     </PageContainer>
   );
 }
