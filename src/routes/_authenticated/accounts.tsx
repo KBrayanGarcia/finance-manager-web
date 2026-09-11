@@ -16,7 +16,7 @@ import {
 } from '@/components/accounts/AccountCreateDialog';
 import { AccountEditDialog } from '@/components/accounts/AccountEditDialog';
 import { AccountCard } from '@/components/accounts/AccountCard';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { confirmAction } from '@/store/confirm.store';
 import { toast } from 'sonner';
 import type { Account } from '@/types/account.types';
 
@@ -32,7 +32,6 @@ function AccountsPage(): React.ReactElement {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
-  const [deactivatingAccountId, setDeactivatingAccountId] = useState<string | null>(null);
 
   const handleCreateSubmit = async (values: AccountFormValues) => {
     try {
@@ -65,15 +64,20 @@ function AccountsPage(): React.ReactElement {
     }
   };
 
-  const handleConfirmDeactivate = async () => {
-    if (!deactivatingAccountId) return;
+  const handleDelete = async (id: string) => {
+    const isConfirmed = await confirmAction({
+      title: '¿Desactivar cuenta financiera?',
+      description: 'Esta cuenta será desactivada y sus movimientos históricos se conservarán intactos.',
+      confirmLabel: 'Desactivar',
+    });
+
+    if (!isConfirmed) return;
+
     try {
-      await deleteAccountMutation.mutateAsync(deactivatingAccountId);
+      await deleteAccountMutation.mutateAsync(id);
       toast.success('Cuenta desactivada exitosamente');
     } catch {
       toast.error('Error al desactivar la cuenta');
-    } finally {
-      setDeactivatingAccountId(null);
     }
   };
 
@@ -110,7 +114,7 @@ function AccountsPage(): React.ReactElement {
               key={account.id}
               account={account}
               onEdit={setEditingAccount}
-              onDelete={(id) => setDeactivatingAccountId(id)}
+              onDelete={handleDelete}
             />
           ))}
         </div>
@@ -121,16 +125,6 @@ function AccountsPage(): React.ReactElement {
         onClose={() => setEditingAccount(null)}
         onSubmit={handleUpdateSubmit}
         isSubmitting={updateAccountMutation.isPending}
-      />
-
-      <ConfirmDialog
-        isOpen={Boolean(deactivatingAccountId)}
-        onOpenChange={(open) => !open && setDeactivatingAccountId(null)}
-        title="¿Desactivar cuenta financiera?"
-        description="Esta cuenta será desactivada y sus movimientos históricos se conservarán intactos."
-        confirmLabel="Desactivar"
-        isLoading={deleteAccountMutation.isPending}
-        onConfirm={handleConfirmDeactivate}
       />
     </PageContainer>
   );

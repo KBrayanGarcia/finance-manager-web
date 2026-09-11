@@ -16,7 +16,7 @@ import {
 } from '@/components/categories/CategoryCreateDialog';
 import { CategoryEditDialog } from '@/components/categories/CategoryEditDialog';
 import { CategoryCard } from '@/components/categories/CategoryCard';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { confirmAction } from '@/store/confirm.store';
 import { toast } from 'sonner';
 import type { Category, CategoryType } from '@/types/category.types';
 
@@ -33,7 +33,6 @@ function CategoriesPage(): React.ReactElement {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
 
   const handleCreateSubmit = async (values: CategoryFormValues) => {
     try {
@@ -66,15 +65,21 @@ function CategoriesPage(): React.ReactElement {
     }
   };
 
-  const handleConfirmDelete = async () => {
-    if (!deletingCategoryId) return;
+  const handleDelete = async (id: string) => {
+    const isConfirmed = await confirmAction({
+      title: '¿Eliminar categoría?',
+      description:
+        'Esta categoría será eliminada. Las transacciones existentes asociadas conservarán su registro histórico.',
+      confirmLabel: 'Eliminar',
+    });
+
+    if (!isConfirmed) return;
+
     try {
-      await deleteCategoryMutation.mutateAsync(deletingCategoryId);
+      await deleteCategoryMutation.mutateAsync(id);
       toast.success('Categoría eliminada exitosamente');
     } catch {
       toast.error('Error al eliminar la categoría');
-    } finally {
-      setDeletingCategoryId(null);
     }
   };
 
@@ -137,7 +142,7 @@ function CategoriesPage(): React.ReactElement {
                 key={category.id}
                 category={category}
                 onEdit={setEditingCategory}
-                onDelete={(id) => setDeletingCategoryId(id)}
+                onDelete={handleDelete}
               />
             ))}
           </div>
@@ -149,16 +154,6 @@ function CategoriesPage(): React.ReactElement {
         onClose={() => setEditingCategory(null)}
         onSubmit={handleUpdateSubmit}
         isSubmitting={updateCategoryMutation.isPending}
-      />
-
-      <ConfirmDialog
-        isOpen={Boolean(deletingCategoryId)}
-        onOpenChange={(open) => !open && setDeletingCategoryId(null)}
-        title="¿Eliminar categoría?"
-        description="Esta categoría será eliminada. Las transacciones existentes asociadas conservarán su registro histórico."
-        confirmLabel="Eliminar"
-        isLoading={deleteCategoryMutation.isPending}
-        onConfirm={handleConfirmDelete}
       />
     </PageContainer>
   );
