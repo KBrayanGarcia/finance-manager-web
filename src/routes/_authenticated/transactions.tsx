@@ -14,6 +14,8 @@ import {
 } from '@/components/transactions/TransactionCreateDialog';
 import { TransactionFiltersBar } from '@/components/transactions/TransactionFiltersBar';
 import { TransactionsTable } from '@/components/transactions/TransactionsTable';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { toast } from 'sonner';
 import type { TransactionType } from '@/types/transaction.types';
 
 export const Route = createFileRoute('/_authenticated/transactions')({
@@ -24,6 +26,7 @@ function TransactionsPage(): React.ReactElement {
   const [selectedType, setSelectedType] = useState<TransactionType | undefined>(undefined);
   const [selectedAccount, setSelectedAccount] = useState<string | undefined>(undefined);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [deletingTxId, setDeletingTxId] = useState<string | null>(null);
 
   const { data: txData, isLoading } = useTransactions({
     type: selectedType,
@@ -38,21 +41,32 @@ function TransactionsPage(): React.ReactElement {
   const deleteTxMutation = useDeleteTransaction();
 
   const handleCreateSubmit = async (values: TransactionFormValues) => {
-    await createTxMutation.mutateAsync({
-      type: values.type,
-      accountId: values.accountId,
-      destinationAccountId: values.type === 'TRANSFER' ? values.destinationAccountId : undefined,
-      categoryId: values.type !== 'TRANSFER' ? values.categoryId : undefined,
-      amount: values.amount,
-      transactionDate: values.transactionDate ? new Date(values.transactionDate).toISOString() : undefined,
-      description: values.description || undefined,
-    });
-    setIsCreateOpen(false);
+    try {
+      await createTxMutation.mutateAsync({
+        type: values.type,
+        accountId: values.accountId,
+        destinationAccountId: values.type === 'TRANSFER' ? values.destinationAccountId : undefined,
+        categoryId: values.type !== 'TRANSFER' ? values.categoryId : undefined,
+        amount: values.amount,
+        transactionDate: values.transactionDate ? new Date(values.transactionDate).toISOString() : undefined,
+        description: values.description || undefined,
+      });
+      toast.success('Transacción registrada con éxito');
+      setIsCreateOpen(false);
+    } catch {
+      toast.error('Error al registrar la transacción');
+    }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('¿Deseas eliminar esta transacción? Los balances se revertirán automáticamente.')) {
-      await deleteTxMutation.mutateAsync(id);
+  const handleConfirmDelete = async () => {
+    if (!deletingTxId) return;
+    try {
+      await deleteTxMutation.mutateAsync(deletingTxId);
+      toast.success('Transacción eliminada y balances actualizados');
+    } catch {
+      toast.error('Error al eliminar la transacción');
+    } finally {
+      setDeletingTxId(null);
     }
   };
 
@@ -85,9 +99,19 @@ function TransactionsPage(): React.ReactElement {
         <TransactionsTable
           transactions={transactions}
           isLoading={isLoading}
-          onDelete={handleDelete}
+          onDelete={(id) => setDeletingTxId(id)}
         />
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(deletingTxId)}
+        onOpenChange={(open) => !open && setDeletingTxId(null)}
+        title="¿Eliminar transacción?"
+        description="Esta acción eliminará el movimiento y revertirá automáticamente los balances asociados en tus cuentas."
+        confirmLabel="Eliminar"
+        isLoading={deleteTxMutation.isPending}
+        onConfirm={handleConfirmDelete}
+      />
     </PageContainer>
   );
 }

@@ -16,6 +16,8 @@ import {
 } from '@/components/categories/CategoryCreateDialog';
 import { CategoryEditDialog } from '@/components/categories/CategoryEditDialog';
 import { CategoryCard } from '@/components/categories/CategoryCard';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { toast } from 'sonner';
 import type { Category, CategoryType } from '@/types/category.types';
 
 export const Route = createFileRoute('/_authenticated/categories')({
@@ -31,10 +33,16 @@ function CategoriesPage(): React.ReactElement {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
 
   const handleCreateSubmit = async (values: CategoryFormValues) => {
-    await createCategoryMutation.mutateAsync(values);
-    setIsCreateOpen(false);
+    try {
+      await createCategoryMutation.mutateAsync(values);
+      toast.success('Categoría creada exitosamente');
+      setIsCreateOpen(false);
+    } catch {
+      toast.error('Error al crear la categoría');
+    }
   };
 
   const handleUpdateSubmit = async ({
@@ -46,16 +54,27 @@ function CategoriesPage(): React.ReactElement {
     readonly name: string;
     readonly color: string;
   }) => {
-    await updateCategoryMutation.mutateAsync({
-      id,
-      payload: { name, color },
-    });
-    setEditingCategory(null);
+    try {
+      await updateCategoryMutation.mutateAsync({
+        id,
+        payload: { name, color },
+      });
+      toast.success('Categoría actualizada correctamente');
+      setEditingCategory(null);
+    } catch {
+      toast.error('Error al actualizar la categoría');
+    }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('¿Deseas eliminar esta categoría?')) {
-      await deleteCategoryMutation.mutateAsync(id);
+  const handleConfirmDelete = async () => {
+    if (!deletingCategoryId) return;
+    try {
+      await deleteCategoryMutation.mutateAsync(deletingCategoryId);
+      toast.success('Categoría eliminada exitosamente');
+    } catch {
+      toast.error('Error al eliminar la categoría');
+    } finally {
+      setDeletingCategoryId(null);
     }
   };
 
@@ -118,7 +137,7 @@ function CategoriesPage(): React.ReactElement {
                 key={category.id}
                 category={category}
                 onEdit={setEditingCategory}
-                onDelete={handleDelete}
+                onDelete={(id) => setDeletingCategoryId(id)}
               />
             ))}
           </div>
@@ -130,6 +149,16 @@ function CategoriesPage(): React.ReactElement {
         onClose={() => setEditingCategory(null)}
         onSubmit={handleUpdateSubmit}
         isSubmitting={updateCategoryMutation.isPending}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(deletingCategoryId)}
+        onOpenChange={(open) => !open && setDeletingCategoryId(null)}
+        title="¿Eliminar categoría?"
+        description="Esta categoría será eliminada. Las transacciones existentes asociadas conservarán su registro histórico."
+        confirmLabel="Eliminar"
+        isLoading={deleteCategoryMutation.isPending}
+        onConfirm={handleConfirmDelete}
       />
     </PageContainer>
   );

@@ -16,6 +16,8 @@ import {
 } from '@/components/accounts/AccountCreateDialog';
 import { AccountEditDialog } from '@/components/accounts/AccountEditDialog';
 import { AccountCard } from '@/components/accounts/AccountCard';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { toast } from 'sonner';
 import type { Account } from '@/types/account.types';
 
 export const Route = createFileRoute('/_authenticated/accounts')({
@@ -30,10 +32,16 @@ function AccountsPage(): React.ReactElement {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [deactivatingAccountId, setDeactivatingAccountId] = useState<string | null>(null);
 
   const handleCreateSubmit = async (values: AccountFormValues) => {
-    await createAccountMutation.mutateAsync(values);
-    setIsCreateOpen(false);
+    try {
+      await createAccountMutation.mutateAsync(values);
+      toast.success('Cuenta creada exitosamente');
+      setIsCreateOpen(false);
+    } catch {
+      toast.error('Error al crear la cuenta financiera');
+    }
   };
 
   const handleUpdateSubmit = async ({
@@ -45,16 +53,27 @@ function AccountsPage(): React.ReactElement {
     readonly name: string;
     readonly color: string;
   }) => {
-    await updateAccountMutation.mutateAsync({
-      id,
-      payload: { name, color },
-    });
-    setEditingAccount(null);
+    try {
+      await updateAccountMutation.mutateAsync({
+        id,
+        payload: { name, color },
+      });
+      toast.success('Cuenta actualizada correctamente');
+      setEditingAccount(null);
+    } catch {
+      toast.error('Error al actualizar la cuenta');
+    }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('¿Estás seguro de desactivar esta cuenta?')) {
-      await deleteAccountMutation.mutateAsync(id);
+  const handleConfirmDeactivate = async () => {
+    if (!deactivatingAccountId) return;
+    try {
+      await deleteAccountMutation.mutateAsync(deactivatingAccountId);
+      toast.success('Cuenta desactivada exitosamente');
+    } catch {
+      toast.error('Error al desactivar la cuenta');
+    } finally {
+      setDeactivatingAccountId(null);
     }
   };
 
@@ -91,7 +110,7 @@ function AccountsPage(): React.ReactElement {
               key={account.id}
               account={account}
               onEdit={setEditingAccount}
-              onDelete={handleDelete}
+              onDelete={(id) => setDeactivatingAccountId(id)}
             />
           ))}
         </div>
@@ -102,6 +121,16 @@ function AccountsPage(): React.ReactElement {
         onClose={() => setEditingAccount(null)}
         onSubmit={handleUpdateSubmit}
         isSubmitting={updateAccountMutation.isPending}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(deactivatingAccountId)}
+        onOpenChange={(open) => !open && setDeactivatingAccountId(null)}
+        title="¿Desactivar cuenta financiera?"
+        description="Esta cuenta será desactivada y sus movimientos históricos se conservarán intactos."
+        confirmLabel="Desactivar"
+        isLoading={deleteAccountMutation.isPending}
+        onConfirm={handleConfirmDeactivate}
       />
     </PageContainer>
   );
