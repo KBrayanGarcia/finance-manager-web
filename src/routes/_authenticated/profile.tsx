@@ -1,133 +1,97 @@
 import React, { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useAuthStore } from '@/store/auth-store';
-import { useUpdateProfile } from '@/features/auth/use-auth';
+import { User, Key } from 'lucide-react';
+import { toast } from 'sonner';
 import { PageContainer } from '@/components/layout/page-container';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { User as UserIcon, CheckCircle2 } from 'lucide-react';
-
-const profileSchema = z.object({
-  firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  lastName: z.string().optional(),
-  password: z.string().optional(),
-});
-
-type ProfileFormValues = z.infer<typeof profileSchema>;
+import { ProfileForm } from '@/components/profile/ProfileForm';
+import { ApiKeyList } from '@/components/api-keys/ApiKeyList';
+import { ApiKeyCreateDialog } from '@/components/api-keys/ApiKeyCreateDialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useApiKeys, useCreateApiKey, useDeleteApiKey } from '@/features/api-keys/use-api-keys';
+import { confirmAction } from '@/store/confirm.store';
+import type { CreateApiKeyResponse } from '@/types/api-key.types';
 
 export const Route = createFileRoute('/_authenticated/profile')({
   component: ProfilePage,
 });
 
 function ProfilePage(): React.ReactElement {
-  const user = useAuthStore((state) => state.user);
-  const updateProfileMutation = useUpdateProfile();
-  const [successMessage, setSuccessMessage] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      firstName: user?.firstName ?? '',
-      lastName: user?.lastName ?? '',
-      password: '',
-    },
-  });
+  const { data: apiKeys = [], isLoading: isLoadingKeys } = useApiKeys();
+  const createApiKeyMutation = useCreateApiKey();
+  const deleteApiKeyMutation = useDeleteApiKey();
 
-  const onSubmit = async (values: ProfileFormValues) => {
-    setSuccessMessage(false);
-    await updateProfileMutation.mutateAsync({
-      firstName: values.firstName,
-      lastName: values.lastName || undefined,
-      password: values.password || undefined,
+  const handleCreateToken = async (params: {
+    readonly name: string;
+    readonly expiresAt?: string;
+  }): Promise<CreateApiKeyResponse | null> => {
+    try {
+      const response = await createApiKeyMutation.mutateAsync(params);
+      toast.success('API Key generada con éxito');
+      return response;
+    } catch {
+      toast.error('Error al generar la API Key');
+      return null;
+    }
+  };
+
+  const handleDeleteToken = async (id: string, name: string) => {
+    const isConfirmed = await confirmAction({
+      title: `¿Revocar API Key "${name}"?`,
+      description:
+        'Cualquier aplicación o servidor MCP que use este token perderá el acceso inmediatamente.',
+      confirmLabel: 'Revocar Token',
     });
-    setSuccessMessage(true);
-    setTimeout(() => setSuccessMessage(false), 4000);
+
+    if (!isConfirmed) return;
+
+    try {
+      await deleteApiKeyMutation.mutateAsync(id);
+      toast.success('API Key revocada exitosamente');
+    } catch {
+      toast.error('Error al revocar la API Key');
+    }
   };
 
   return (
     <PageContainer
-      title="Perfil de Usuario"
-      description="Consulta y actualiza los datos de tu cuenta personal"
+      title="Ajustes de Cuenta"
+      description="Administra tu información personal y tokens de integración segura"
     >
-      <div className="max-w-2xl space-y-6">
-        <Card className="border-border shadow-sm">
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <UserIcon className="w-7 h-7" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">
-                  {user ? `${user.firstName} ${user.lastName ?? ''}`.trim() : 'Usuario'}
-                </CardTitle>
-                <CardDescription>{user?.email}</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
+      <div className="max-w-3xl space-y-6">
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              <span>Información Personal</span>
+            </TabsTrigger>
+            <TabsTrigger value="api-keys" className="flex items-center gap-2">
+              <Key className="w-4 h-4" />
+              <span>Tokens de Acceso (API Keys)</span>
+            </TabsTrigger>
+          </TabsList>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <CardContent className="space-y-4">
-              {successMessage && (
-                <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-600 text-sm flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                  <span>Perfil actualizado correctamente.</span>
-                </div>
-              )}
+          <TabsContent value="profile">
+            <ProfileForm />
+          </TabsContent>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium" htmlFor="p-first-name">
-                    Nombre
-                  </label>
-                  <Input id="p-first-name" {...register('firstName')} />
-                  {errors.firstName && (
-                    <p className="text-xs text-destructive mt-1">{errors.firstName.message}</p>
-                  )}
-                </div>
+          <TabsContent value="api-keys">
+            <ApiKeyList
+              apiKeys={apiKeys}
+              isLoading={isLoadingKeys}
+              onOpenCreate={() => setIsCreateOpen(true)}
+              onDelete={handleDeleteToken}
+            />
+          </TabsContent>
+        </Tabs>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-medium" htmlFor="p-last-name">
-                    Apellido
-                  </label>
-                  <Input id="p-last-name" {...register('lastName')} />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium" htmlFor="p-email">
-                  Correo Electrónico (No editable)
-                </label>
-                <Input id="p-email" value={user?.email ?? ''} disabled className="opacity-70" />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium" htmlFor="p-password">
-                  Nueva Contraseña (Opcional)
-                </label>
-                <Input
-                  id="p-password"
-                  type="password"
-                  placeholder="Dejar en blanco para mantener la actual"
-                  {...register('password')}
-                />
-              </div>
-
-              <div className="pt-2">
-                <Button type="submit" disabled={updateProfileMutation.isPending}>
-                  {updateProfileMutation.isPending ? 'Guardando...' : 'Actualizar Información'}
-                </Button>
-              </div>
-            </CardContent>
-          </form>
-        </Card>
+        <ApiKeyCreateDialog
+          isOpen={isCreateOpen}
+          onOpenChange={setIsCreateOpen}
+          onSubmit={handleCreateToken}
+          isSubmitting={createApiKeyMutation.isPending}
+        />
       </div>
     </PageContainer>
   );
