@@ -26,11 +26,12 @@ export function TransactionFiltersBar({
   accounts,
 }: TransactionFiltersBarProps): React.ReactElement {
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <Button
           variant={selectedType === undefined ? 'default' : 'outline'}
           size="sm"
+          className="text-xs"
           onClick={() => onSelectType(undefined)}
         >
           Todos
@@ -38,6 +39,7 @@ export function TransactionFiltersBar({
         <Button
           variant={selectedType === 'EXPENSE' ? 'default' : 'outline'}
           size="sm"
+          className="text-xs"
           onClick={() => onSelectType('EXPENSE')}
         >
           Gastos
@@ -45,6 +47,7 @@ export function TransactionFiltersBar({
         <Button
           variant={selectedType === 'INCOME' ? 'default' : 'outline'}
           size="sm"
+          className="text-xs"
           onClick={() => onSelectType('INCOME')}
         >
           Ingresos
@@ -52,13 +55,14 @@ export function TransactionFiltersBar({
         <Button
           variant={selectedType === 'TRANSFER' ? 'default' : 'outline'}
           size="sm"
+          className="text-xs"
           onClick={() => onSelectType('TRANSFER')}
         >
           Transferencias
         </Button>
       </div>
 
-      <div className="w-48">
+      <div className="w-full sm:w-52">
         <Select
           value={selectedAccountId ?? 'ALL'}
           onValueChange={(val) => onSelectAccount(val === 'ALL' ? undefined : val)}

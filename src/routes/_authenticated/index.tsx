@@ -45,18 +45,18 @@ function DashboardPage(): React.ReactElement {
     >
       <div className="space-y-6">
         {/* Grilla de Métricas Principales */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <Card className="shadow-sm border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Balance Total Consolidado
               </CardTitle>
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                 <Wallet className="w-4 h-4" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-2xl font-bold text-foreground truncate">
                 {isLoadingAccounts ? (
                   <span className="text-muted-foreground text-lg">Cargando...</span>
                 ) : (
@@ -74,12 +74,12 @@ function DashboardPage(): React.ReactElement {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Cuentas Financieras
               </CardTitle>
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 flex-shrink-0">
                 <Wallet className="w-4 h-4" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-2xl font-bold text-foreground truncate">
                 {isLoadingAccounts ? '...' : accounts.length}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -88,17 +88,17 @@ function DashboardPage(): React.ReactElement {
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm border-border">
+          <Card className="shadow-sm border-border sm:col-span-2 lg:col-span-1">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Transacciones
               </CardTitle>
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600 flex-shrink-0">
                 <Clock className="w-4 h-4" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-2xl font-bold text-foreground truncate">
                 {isLoadingTx ? '...' : (transactionsData?.total ?? 0)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -110,28 +110,28 @@ function DashboardPage(): React.ReactElement {
 
         {/* Sección de Cuentas */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-foreground m-0">Mis Cuentas</h3>
-            <Link to="/accounts" className="text-xs text-primary font-medium hover:underline">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground m-0">Mis Cuentas</h3>
+            <Link to="/accounts" className="text-xs text-primary font-medium hover:underline flex-shrink-0">
               Administrar cuentas →
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {accounts.map((account) => (
               <Card key={account.id} className="border-border shadow-sm hover:shadow transition-shadow">
-                <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base font-semibold">{account.name}</CardTitle>
+                <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <CardTitle className="text-base font-semibold truncate">{account.name}</CardTitle>
                     <CardDescription className="text-xs">{account.type}</CardDescription>
                   </div>
                   <div
-                    className="w-4 h-4 rounded-full"
+                    className="w-4 h-4 rounded-full flex-shrink-0"
                     style={{ backgroundColor: account.color || '#3B82F6' }}
                   />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-xl font-bold">
+                  <div className="text-xl font-bold truncate">
                     ${Number(account.currentBalance).toLocaleString('es-MX', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
@@ -148,9 +148,9 @@ function DashboardPage(): React.ReactElement {
 
         {/* Sección de Transacciones Recientes */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-foreground m-0">Últimos Movimientos</h3>
-            <Link to="/transactions" className="text-xs text-primary font-medium hover:underline">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground m-0">Últimos Movimientos</h3>
+            <Link to="/transactions" className="text-xs text-primary font-medium hover:underline flex-shrink-0">
               Ver todo el historial →
             </Link>
           </div>
@@ -158,7 +158,7 @@ function DashboardPage(): React.ReactElement {
           <Card className="border-border shadow-sm">
             <CardContent className="p-0">
               {recentTransactions.length === 0 ? (
-                <div className="p-8 text-center text-sm text-muted-foreground">
+                <div className="p-6 sm:p-8 text-center text-sm text-muted-foreground">
                   No hay transacciones registradas recientemente.
                 </div>
               ) : (
@@ -170,11 +170,11 @@ function DashboardPage(): React.ReactElement {
                     return (
                       <div
                         key={tx.id}
-                        className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
+                        className="p-3 sm:p-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                           <div
-                            className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
                               isIncome
                                 ? 'bg-emerald-500/10 text-emerald-600'
                                 : isTransfer
@@ -190,20 +190,20 @@ function DashboardPage(): React.ReactElement {
                               <ArrowUpRight className="w-4 h-4" />
                             )}
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-foreground m-0">
+                          <div className="min-w-0">
+                            <p className="text-xs sm:text-sm font-medium text-foreground m-0 truncate">
                               {tx.description || (isTransfer ? 'Transferencia' : 'Transacción')}
                             </p>
-                            <p className="text-xs text-muted-foreground m-0">
+                            <p className="text-[11px] sm:text-xs text-muted-foreground m-0 truncate">
                               {format(new Date(tx.transactionDate), 'dd MMMM yyyy', { locale: es })}
                               {tx.account && ` • ${tx.account.name}`}
                             </p>
                           </div>
                         </div>
 
-                        <div className="text-right">
+                        <div className="text-right flex-shrink-0">
                           <div
-                            className={`text-sm font-semibold ${
+                            className={`text-xs sm:text-sm font-semibold ${
                               isIncome ? 'text-emerald-600' : isTransfer ? 'text-blue-600' : 'text-foreground'
                             }`}
                           >
@@ -213,7 +213,7 @@ function DashboardPage(): React.ReactElement {
                               maximumFractionDigits: 2,
                             })}
                           </div>
-                          <Badge variant={isIncome ? 'success' : isTransfer ? 'secondary' : 'outline'}>
+                          <Badge variant={isIncome ? 'success' : isTransfer ? 'secondary' : 'outline'} className="text-[10px] sm:text-xs">
                             {tx.type}
                           </Badge>
                         </div>

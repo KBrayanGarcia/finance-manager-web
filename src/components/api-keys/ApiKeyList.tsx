@@ -63,14 +63,14 @@ export function ApiKeyList({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-foreground">Tokens Activos</h3>
           <p className="text-xs text-muted-foreground">
             Claves con permisos completos para acceder a tus recursos financieros.
           </p>
         </div>
-        <Button onClick={onOpenCreate} size="sm" className="gap-2">
+        <Button onClick={onOpenCreate} size="sm" className="gap-2 w-full sm:w-auto">
           <Plus className="w-4 h-4" />
           <span>Nueva API Key</span>
         </Button>
@@ -79,20 +79,20 @@ export function ApiKeyList({
       <div className="grid gap-3">
         {apiKeys.map((key) => (
           <Card key={key.id} className="border-border shadow-sm">
-            <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between space-y-0">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+            <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between space-y-0 gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="p-1.5 rounded-md bg-primary/10 text-primary flex-shrink-0">
                   <Key className="w-4 h-4" />
                 </div>
-                <div>
-                  <CardTitle className="text-sm font-semibold">{key.name}</CardTitle>
+                <div className="min-w-0">
+                  <CardTitle className="text-sm font-semibold truncate">{key.name}</CardTitle>
                   <CardDescription className="font-mono text-xs text-muted-foreground">
                     {key.prefix}••••••••••••••••
                   </CardDescription>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <Badge variant={key.isActive ? 'default' : 'secondary'} className="text-[10px]">
                   {key.isActive ? 'Activo' : 'Inactivo'}
                 </Badge>

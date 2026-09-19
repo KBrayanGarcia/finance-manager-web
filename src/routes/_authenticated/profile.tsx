@@ -61,12 +61,12 @@ function ProfilePage(): React.ReactElement {
     >
       <div className="max-w-3xl space-y-6">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
+          <TabsList className="grid w-full sm:max-w-md grid-cols-1 sm:grid-cols-2 h-auto p-1 gap-1">
+            <TabsTrigger value="profile" className="flex items-center justify-center gap-2 py-2">
               <User className="w-4 h-4" />
               <span>Información Personal</span>
             </TabsTrigger>
-            <TabsTrigger value="api-keys" className="flex items-center gap-2">
+            <TabsTrigger value="api-keys" className="flex items-center justify-center gap-2 py-2">
               <Key className="w-4 h-4" />
               <span>Tokens de Acceso (API Keys)</span>
             </TabsTrigger>

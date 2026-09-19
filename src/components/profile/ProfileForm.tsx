@@ -74,7 +74,7 @@ export function ProfileForm(): React.ReactElement {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-medium" htmlFor="p-first-name">
                 Nombre
@@ -113,7 +113,7 @@ export function ProfileForm(): React.ReactElement {
           </div>
 
           <div className="pt-2">
-            <Button type="submit" disabled={updateProfileMutation.isPending}>
+            <Button type="submit" className="w-full sm:w-auto" disabled={updateProfileMutation.isPending}>
               {updateProfileMutation.isPending ? 'Guardando...' : 'Actualizar Información'}
             </Button>
           </div>

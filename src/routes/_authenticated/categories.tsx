@@ -98,7 +98,7 @@ function CategoriesPage(): React.ReactElement {
     >
       <div className="space-y-6">
         {/* Filtros por pestaña rápida */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant={filterType === undefined ? 'default' : 'outline'}
             size="sm"
@@ -125,7 +125,7 @@ function CategoriesPage(): React.ReactElement {
         {isLoading ? (
           <div className="text-center py-12 text-sm text-muted-foreground">Cargando categorías...</div>
         ) : categories.length === 0 ? (
-          <Card className="p-12 text-center border-dashed">
+          <Card className="p-6 sm:p-12 text-center border-dashed">
             <Tags className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium text-foreground">No hay categorías encontradas</h3>
             <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -136,7 +136,7 @@ function CategoriesPage(): React.ReactElement {
             </Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {categories.map((category) => (
               <CategoryCard
                 key={category.id}

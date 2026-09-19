@@ -17,15 +17,15 @@ export function PageContainer({
   className,
 }: PageContainerProps): React.ReactElement {
   return (
-    <div className={cn('p-8 space-y-6 max-w-7xl mx-auto w-full', className)}>
+    <div className={cn('p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full', className)}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground m-0">{title}</h2>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground m-0">{title}</h2>
           {description && (
-            <p className="text-sm text-muted-foreground mt-1 m-0">{description}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 m-0">{description}</p>
           )}
         </div>
-        {actions && <div className="flex items-center gap-3">{actions}</div>}
+        {actions && <div className="flex items-center gap-2 sm:gap-3 flex-wrap">{actions}</div>}
       </div>
       <div>{children}</div>
     </div>

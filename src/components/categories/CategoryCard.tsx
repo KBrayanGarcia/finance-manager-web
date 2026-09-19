@@ -19,24 +19,24 @@ export function CategoryCard({
   const isIncome = category.type === 'INCOME';
 
   return (
-    <Card className="border-border shadow-sm flex items-center justify-between p-4">
-      <div className="flex items-center gap-3">
+    <Card className="border-border shadow-sm flex items-center justify-between p-4 gap-3">
+      <div className="flex items-center gap-3 min-w-0">
         <div
-          className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+          className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
             isIncome ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
           }`}
         >
           {isIncome ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
         </div>
-        <div>
-          <h4 className="text-sm font-semibold text-foreground m-0">{category.name}</h4>
+        <div className="min-w-0">
+          <h4 className="text-sm font-semibold text-foreground m-0 truncate">{category.name}</h4>
           <Badge variant={isIncome ? 'success' : 'outline'} className="mt-1 text-[10px]">
             {isIncome ? 'Ingreso' : 'Gasto'}
           </Badge>
         </div>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-shrink-0">
         <Button
           variant="ghost"
           size="icon"
