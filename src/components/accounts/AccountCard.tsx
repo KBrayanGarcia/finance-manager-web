@@ -2,6 +2,7 @@ import React from "react";
 import { Edit2, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatAccountType } from "@/lib/formatters";
 import type { Account } from "@/types/account.types";
 
 interface AccountCardProps {
@@ -23,7 +24,7 @@ export function AccountCard({ account, onEdit, onDelete }: AccountCardProps): Re
                         <CardTitle className="text-base font-bold truncate">{account.name}</CardTitle>
                     </div>
                     <span className="text-xs bg-muted px-2 py-0.5 rounded font-medium text-muted-foreground flex-shrink-0">
-                        {account.type}
+                        {formatAccountType(account.type)}
                     </span>
                 </div>
                 <CardDescription className="text-xs">Moneda: {account.currency}</CardDescription>
@@ -46,6 +47,7 @@ export function AccountCard({ account, onEdit, onDelete }: AccountCardProps): Re
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     onClick={() => onEdit(account)}
+                    aria-label={`Editar cuenta ${account.name}`}
                 >
                     <Edit2 className="w-3.5 h-3.5" />
                 </Button>
@@ -54,6 +56,7 @@ export function AccountCard({ account, onEdit, onDelete }: AccountCardProps): Re
                     size="icon"
                     className="h-8 w-8 text-destructive hover:bg-destructive/10"
                     onClick={() => onDelete(account.id)}
+                    aria-label={`Eliminar cuenta ${account.name}`}
                 >
                     <Trash2 className="w-3.5 h-3.5" />
                 </Button>

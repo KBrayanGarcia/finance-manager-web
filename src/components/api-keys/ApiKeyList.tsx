@@ -102,6 +102,7 @@ export function ApiKeyList({
                   className="h-8 w-8 text-destructive hover:bg-destructive/10"
                   onClick={() => onDelete(key.id, key.name)}
                   title="Revocar token"
+                  aria-label={`Revocar token ${key.name}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

@@ -1,7 +1,10 @@
 import React from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import {
+  formatAccountType,
+  formatTransactionDate,
+  formatTransactionType,
+} from '@/lib/formatters';
 import {
   Wallet,
   ArrowUpRight,
@@ -123,7 +126,7 @@ function DashboardPage(): React.ReactElement {
                 <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2">
                   <div className="min-w-0">
                     <CardTitle className="text-base font-semibold truncate">{account.name}</CardTitle>
-                    <CardDescription className="text-xs">{account.type}</CardDescription>
+                    <CardDescription className="text-xs">{formatAccountType(account.type)}</CardDescription>
                   </div>
                   <div
                     className="w-4 h-4 rounded-full flex-shrink-0"
@@ -195,8 +198,10 @@ function DashboardPage(): React.ReactElement {
                               {tx.description || (isTransfer ? 'Transferencia' : 'Transacción')}
                             </p>
                             <p className="text-[11px] sm:text-xs text-muted-foreground m-0 truncate">
-                              {format(new Date(tx.transactionDate), 'dd MMMM yyyy', { locale: es })}
-                              {tx.account && ` • ${tx.account.name}`}
+                              {formatTransactionDate(tx.transactionDate, 'dd MMMM yyyy')}
+                              {isTransfer
+                                ? ` • ${tx.account?.name || '—'} → ${tx.destinationAccount?.name || '—'}`
+                                : tx.account && ` • ${tx.account.name}`}
                             </p>
                           </div>
                         </div>
@@ -214,7 +219,7 @@ function DashboardPage(): React.ReactElement {
                             })}
                           </div>
                           <Badge variant={isIncome ? 'success' : isTransfer ? 'secondary' : 'outline'} className="text-[10px] sm:text-xs">
-                            {tx.type}
+                            {formatTransactionType(tx.type)}
                           </Badge>
                         </div>
                       </div>

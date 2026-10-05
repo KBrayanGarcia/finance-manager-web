@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { format } from 'date-fns';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Plus } from 'lucide-react';
@@ -25,15 +26,33 @@ import type { Account } from '@/types/account.types';
 import type { Category } from '@/types/category.types';
 import type { TransactionType } from '@/types/transaction.types';
 
-const transactionSchema = z.object({
-  type: z.enum(['EXPENSE', 'INCOME', 'TRANSFER']),
-  accountId: z.string().min(1, 'Selecciona una cuenta de origen'),
-  destinationAccountId: z.string().optional(),
-  categoryId: z.string().optional(),
-  amount: z.number().positive('El monto debe ser mayor a 0'),
-  transactionDate: z.string().min(1, 'Selecciona la fecha'),
-  description: z.string().optional(),
-});
+const transactionSchema = z
+  .object({
+    type: z.enum(['EXPENSE', 'INCOME', 'TRANSFER']),
+    accountId: z.string().min(1, 'Selecciona una cuenta de origen'),
+    destinationAccountId: z.string().optional(),
+    categoryId: z.string().optional(),
+    amount: z.number().positive('El monto debe ser mayor a 0'),
+    transactionDate: z.string().min(1, 'Selecciona la fecha'),
+    description: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type === 'TRANSFER') {
+      if (!data.destinationAccountId || data.destinationAccountId.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Selecciona una cuenta de destino',
+          path: ['destinationAccountId'],
+        });
+      } else if (data.destinationAccountId === data.accountId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'La cuenta de destino no puede ser igual a la de origen',
+          path: ['destinationAccountId'],
+        });
+      }
+    }
+  });
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;
 
@@ -64,15 +83,34 @@ export function TransactionCreateDialog({
       destinationAccountId: '',
       categoryId: '',
       amount: 0,
-      transactionDate: new Date().toISOString().split('T')[0],
+      transactionDate: format(new Date(), 'yyyy-MM-dd'),
       description: '',
     },
   });
 
+  const selectedAccountId = useWatch({
+    control: createForm.control,
+    name: 'accountId',
+  });
+  const selectedDestinationAccountId = useWatch({
+    control: createForm.control,
+    name: 'destinationAccountId',
+  });
+
   const handleFormSubmit = async (values: TransactionFormValues) => {
-    await onSubmit(values);
-    createForm.reset();
+    try {
+      await onSubmit(values);
+      createForm.reset();
+    } catch {
+      // Si onSubmit lanza error, no resetear el formulario para preservar los datos del usuario
+    }
   };
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      createForm.clearErrors();
+    }
+  }, [isOpen, createForm]);
 
   const filteredCategories = categories.filter((c) => c.type === formType);
 
@@ -116,35 +154,59 @@ export function TransactionCreateDialog({
             <label className="text-xs font-medium">
               {formType === 'TRANSFER' ? 'Cuenta Origen' : 'Cuenta'}
             </label>
-            <Select onValueChange={(val) => createForm.setValue('accountId', val)}>
+            <Select
+              value={selectedAccountId || undefined}
+              onValueChange={(val) => createForm.setValue('accountId', val, { shouldValidate: true })}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona una cuenta" />
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((acc) => (
-                  <SelectItem key={acc.id} value={acc.id}>
+                  <SelectItem
+                    key={acc.id}
+                    value={acc.id}
+                    disabled={formType === 'TRANSFER' && acc.id === selectedDestinationAccountId}
+                  >
                     {acc.name} (${Number(acc.currentBalance).toFixed(2)})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {createForm.formState.errors.accountId && (
+              <p className="text-xs text-destructive mt-1">
+                {createForm.formState.errors.accountId.message}
+              </p>
+            )}
           </div>
 
           {formType === 'TRANSFER' && (
             <div className="space-y-1">
               <label className="text-xs font-medium">Cuenta Destino</label>
-              <Select onValueChange={(val) => createForm.setValue('destinationAccountId', val)}>
+              <Select
+                value={selectedDestinationAccountId || undefined}
+                onValueChange={(val) => createForm.setValue('destinationAccountId', val, { shouldValidate: true })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona cuenta receptora" />
                 </SelectTrigger>
                 <SelectContent>
                   {accounts.map((acc) => (
-                    <SelectItem key={acc.id} value={acc.id}>
+                    <SelectItem
+                      key={acc.id}
+                      value={acc.id}
+                      disabled={acc.id === selectedAccountId}
+                    >
                       {acc.name} (${Number(acc.currentBalance).toFixed(2)})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {createForm.formState.errors.destinationAccountId?.message && (
+                <p className="text-xs text-destructive mt-1">
+                  {createForm.formState.errors.destinationAccountId.message}
+                </p>
+              )}
             </div>
           )}
 

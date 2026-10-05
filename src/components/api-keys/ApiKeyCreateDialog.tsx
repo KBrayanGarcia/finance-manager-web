@@ -132,6 +132,7 @@ export function ApiKeyCreateDialog({
                                     className="flex-shrink-0"
                                     onClick={handleCopy}
                                     title="Copiar token"
+                                    aria-label={hasCopied ? 'Token copiado' : 'Copiar token'}
                                 >
                                     {hasCopied ? (
                                         <Check className="w-4 h-4 text-emerald-600" />

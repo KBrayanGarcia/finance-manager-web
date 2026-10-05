@@ -16,6 +16,7 @@ import { TransactionFiltersBar } from '@/components/transactions/TransactionFilt
 import { TransactionsTable } from '@/components/transactions/TransactionsTable';
 import { confirmAction } from '@/store/confirm.store';
 import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/lib/api-error';
 import type { TransactionType } from '@/types/transaction.types';
 
 export const Route = createFileRoute('/_authenticated/transactions')({
@@ -47,13 +48,14 @@ function TransactionsPage(): React.ReactElement {
         destinationAccountId: values.type === 'TRANSFER' ? values.destinationAccountId : undefined,
         categoryId: values.type !== 'TRANSFER' ? values.categoryId : undefined,
         amount: values.amount,
-        transactionDate: values.transactionDate ? new Date(values.transactionDate).toISOString() : undefined,
+        transactionDate: values.transactionDate || undefined,
         description: values.description || undefined,
       });
       toast.success('Transacción registrada con éxito');
       setIsCreateOpen(false);
-    } catch {
-      toast.error('Error al registrar la transacción');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Error al registrar la transacción'));
+      throw error;
     }
   };
 

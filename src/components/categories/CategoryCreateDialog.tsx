@@ -94,8 +94,8 @@ export function CategoryCreateDialog({
                 <SelectValue placeholder="Selecciona el tipo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="EXPENSE">Gasto (EXPENSE)</SelectItem>
-                <SelectItem value="INCOME">Ingreso (INCOME)</SelectItem>
+                <SelectItem value="EXPENSE">Gasto</SelectItem>
+                <SelectItem value="INCOME">Ingreso</SelectItem>
               </SelectContent>
             </Select>
           </div>

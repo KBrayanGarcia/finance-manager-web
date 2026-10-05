@@ -1,5 +1,5 @@
 import React from 'react';
-import { format } from 'date-fns';
+import { formatTransactionDate, formatTransactionType } from '@/lib/formatters';
 import { Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,11 +25,11 @@ export function TransactionMobileCard({
     <Card className="border-border shadow-sm p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs text-muted-foreground">
-          {format(new Date(tx.transactionDate), 'dd/MM/yyyy')}
+          {formatTransactionDate(tx.transactionDate)}
         </span>
         <div className="flex items-center gap-2">
           <Badge variant={isIncome ? 'success' : isTransfer ? 'secondary' : 'outline'} className="text-[10px]">
-            {tx.type}
+            {formatTransactionType(tx.type)}
           </Badge>
           <Button
             variant="ghost"

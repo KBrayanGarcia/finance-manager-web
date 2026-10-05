@@ -1,5 +1,5 @@
 import React from 'react';
-import { format } from 'date-fns';
+import { formatTransactionDate, formatTransactionType } from '@/lib/formatters';
 import { Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -79,14 +79,14 @@ export function TransactionsTable({
                   return (
                     <TableRow key={tx.id}>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {format(new Date(tx.transactionDate), 'dd/MM/yyyy')}
+                        {formatTransactionDate(tx.transactionDate)}
                       </TableCell>
                       <TableCell className="font-medium text-foreground">
                         {tx.description || (isTransfer ? 'Transferencia' : 'Sin descripción')}
                       </TableCell>
                       <TableCell>
                         <Badge variant={isIncome ? 'success' : isTransfer ? 'secondary' : 'outline'}>
-                          {tx.type}
+                          {formatTransactionType(tx.type)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs">
