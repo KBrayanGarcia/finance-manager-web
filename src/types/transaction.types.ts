@@ -35,6 +35,16 @@ export interface CreateTransactionPayload {
   readonly description?: string;
 }
 
+export interface UpdateTransactionPayload {
+  readonly accountId?: string;
+  readonly type?: TransactionType;
+  readonly amount?: number;
+  readonly categoryId?: string | null;
+  readonly destinationAccountId?: string | null;
+  readonly transactionDate?: string;
+  readonly description?: string | null;
+}
+
 export interface TransactionFilters {
   readonly accountId?: string;
   readonly categoryId?: string;

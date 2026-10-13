@@ -4,8 +4,13 @@ import {
   deleteTransaction,
   fetchTransactionById,
   fetchTransactions,
+  updateTransaction,
 } from './transactions.api';
-import type { CreateTransactionPayload, TransactionFilters } from '@/types/transaction.types';
+import type {
+  CreateTransactionPayload,
+  TransactionFilters,
+  UpdateTransactionPayload,
+} from '@/types/transaction.types';
 
 export function useTransactions(filters?: TransactionFilters) {
   return useQuery({
@@ -27,6 +32,19 @@ export function useCreateTransaction() {
 
   return useMutation({
     mutationFn: (payload: CreateTransactionPayload) => createTransaction(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    },
+  });
+}
+
+export function useUpdateTransaction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { readonly id: string; readonly payload: UpdateTransactionPayload }) =>
+      updateTransaction(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
