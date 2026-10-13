@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatTransactionDate, formatTransactionType } from '@/lib/formatters';
-import { Trash2 } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import type { Transaction } from '@/types/transaction.types';
 
 interface TransactionMobileCardProps {
   readonly tx: Transaction;
+  readonly onEdit: (tx: Transaction) => void;
   readonly onDelete: (id: string) => void;
 }
 
@@ -16,6 +17,7 @@ interface TransactionMobileCardProps {
  */
 export function TransactionMobileCard({
   tx,
+  onEdit,
   onDelete,
 }: TransactionMobileCardProps): React.ReactElement {
   const isIncome = tx.type === 'INCOME';
@@ -27,10 +29,19 @@ export function TransactionMobileCard({
         <span className="text-xs text-muted-foreground">
           {formatTransactionDate(tx.transactionDate)}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Badge variant={isIncome ? 'success' : isTransfer ? 'secondary' : 'outline'} className="text-[10px]">
             {formatTransactionType(tx.type)}
           </Badge>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+            onClick={() => onEdit(tx)}
+            aria-label="Editar transacción"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"

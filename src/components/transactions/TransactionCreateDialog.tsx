@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,39 +21,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  transactionSchema,
+  type TransactionFormValues,
+} from './transaction-form.schema';
 import type { Account } from '@/types/account.types';
 import type { Category } from '@/types/category.types';
 import type { TransactionType } from '@/types/transaction.types';
 
-const transactionSchema = z
-  .object({
-    type: z.enum(['EXPENSE', 'INCOME', 'TRANSFER']),
-    accountId: z.string().min(1, 'Selecciona una cuenta de origen'),
-    destinationAccountId: z.string().optional(),
-    categoryId: z.string().optional(),
-    amount: z.number().positive('El monto debe ser mayor a 0'),
-    transactionDate: z.string().min(1, 'Selecciona la fecha'),
-    description: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.type === 'TRANSFER') {
-      if (!data.destinationAccountId || data.destinationAccountId.trim() === '') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Selecciona una cuenta de destino',
-          path: ['destinationAccountId'],
-        });
-      } else if (data.destinationAccountId === data.accountId) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'La cuenta de destino no puede ser igual a la de origen',
-          path: ['destinationAccountId'],
-        });
-      }
-    }
-  });
-
-export type TransactionFormValues = z.infer<typeof transactionSchema>;
+export type { TransactionFormValues };
 
 interface TransactionCreateDialogProps {
   readonly isOpen: boolean;

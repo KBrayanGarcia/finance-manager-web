@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatTransactionDate, formatTransactionType } from '@/lib/formatters';
-import { Trash2 } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,12 +18,14 @@ import { TransactionMobileCard } from './TransactionMobileCard';
 interface TransactionsTableProps {
   readonly transactions: readonly Transaction[];
   readonly isLoading: boolean;
+  readonly onEdit: (tx: Transaction) => void;
   readonly onDelete: (id: string) => void;
 }
 
 export function TransactionsTable({
   transactions,
   isLoading,
+  onEdit,
   onDelete,
 }: TransactionsTableProps): React.ReactElement {
   if (isLoading) {
@@ -51,7 +53,7 @@ export function TransactionsTable({
       {/* Vista para pantallas móviles en tarjetas */}
       <div className="space-y-3 md:hidden">
         {transactions.map((tx) => (
-          <TransactionMobileCard key={tx.id} tx={tx} onDelete={onDelete} />
+          <TransactionMobileCard key={tx.id} tx={tx} onEdit={onEdit} onDelete={onDelete} />
         ))}
       </div>
 
@@ -111,15 +113,26 @@ export function TransactionsTable({
                         })}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                          onClick={() => onDelete(tx.id)}
-                          aria-label="Eliminar transacción"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                            onClick={() => onEdit(tx)}
+                            aria-label="Editar transacción"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                            onClick={() => onDelete(tx.id)}
+                            aria-label="Eliminar transacción"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
