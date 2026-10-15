@@ -5,6 +5,7 @@ import { Key, Trash2, ShieldCheck, Clock, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { formatDateTime } from '@/lib/formatters';
 import type { ApiKey } from '@/types/api-key.types';
 
 interface ApiKeyListProps {
@@ -12,11 +13,6 @@ interface ApiKeyListProps {
   readonly isLoading: boolean;
   readonly onOpenCreate: () => void;
   readonly onDelete: (id: string, name: string) => void;
-}
-
-function formatDate(dateString?: string): string {
-  if (!dateString) return 'Nunca utilizado';
-  return format(parseISO(dateString), 'dd MMM yyyy, HH:mm', { locale: es });
 }
 
 function formatExpiration(dateString?: string): string {
@@ -112,11 +108,11 @@ export function ApiKeyList({
             <CardContent className="p-4 pt-1 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-muted-foreground border-t border-border/50 mt-2 bg-muted/10">
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Creado: {formatDate(key.createdAt)}</span>
+                <span>Creado: {formatDateTime(key.createdAt)}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-blue-500" />
-                <span>Uso: {formatDate(key.lastUsedAt)}</span>
+                <span>Uso: {formatDateTime(key.lastUsedAt)}</span>
               </div>
               <div className="flex items-center gap-1.5 sm:justify-end">
                 <span>{formatExpiration(key.expiresAt)}</span>
