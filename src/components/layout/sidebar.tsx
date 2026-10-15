@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useRouterState } from '@tanstack/react-router';
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router';
 import {
   LayoutDashboard,
   Wallet,
@@ -34,6 +34,7 @@ const NAV_ITEMS: readonly NavItem[] = [
 export function Sidebar({ isMobileOpen = false, onCloseMobile }: SidebarProps): React.ReactElement {
   const router = useRouterState();
   const currentPath = router.location.pathname;
+  const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
 
   const handleLinkClick = () => {
@@ -43,6 +44,7 @@ export function Sidebar({ isMobileOpen = false, onCloseMobile }: SidebarProps): 
   const handleLogout = () => {
     onCloseMobile?.();
     logout();
+    navigate({ to: '/login', replace: true });
   };
 
   const renderContent = (isMobile: boolean) => (
