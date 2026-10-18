@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Navigate, Outlet, redirect } from "@tanstack/react-router";
 import { useAuthStore } from "@/store/auth-store";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Navbar } from "@/components/layout/navbar";
@@ -21,6 +21,11 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
 
     return (
         <div className="flex h-screen bg-background overflow-hidden">

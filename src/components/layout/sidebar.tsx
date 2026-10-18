@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useRouterState } from '@tanstack/react-router';
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router';
 import {
   LayoutDashboard,
   Wallet,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { cn } from '@/lib/utils';
+import { APP_VERSION } from '@/lib/version';
 
 interface NavItem {
   readonly label: string;
@@ -34,6 +35,7 @@ const NAV_ITEMS: readonly NavItem[] = [
 export function Sidebar({ isMobileOpen = false, onCloseMobile }: SidebarProps): React.ReactElement {
   const router = useRouterState();
   const currentPath = router.location.pathname;
+  const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
 
   const handleLinkClick = () => {
@@ -43,6 +45,7 @@ export function Sidebar({ isMobileOpen = false, onCloseMobile }: SidebarProps): 
   const handleLogout = () => {
     onCloseMobile?.();
     logout();
+    navigate({ to: '/login', replace: true });
   };
 
   const renderContent = (isMobile: boolean) => (
@@ -94,7 +97,7 @@ export function Sidebar({ isMobileOpen = false, onCloseMobile }: SidebarProps): 
         })}
       </nav>
 
-      <div className="p-4 border-t border-border mt-auto">
+      <div className="p-4 border-t border-border mt-auto space-y-3">
         <button
           type="button"
           onClick={handleLogout}
@@ -103,6 +106,13 @@ export function Sidebar({ isMobileOpen = false, onCloseMobile }: SidebarProps): 
           <LogOut className="w-4 h-4" />
           <span>Cerrar Sesión</span>
         </button>
+
+        <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
+          <span className="text-[11px] font-medium tracking-wide">Versión</span>
+          <span className="font-mono text-[11px] bg-muted/60 px-2 py-0.5 rounded border border-border/50 select-all">
+            {APP_VERSION}
+          </span>
+        </div>
       </div>
     </>
   );

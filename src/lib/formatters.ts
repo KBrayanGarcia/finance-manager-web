@@ -1,4 +1,4 @@
-import { format, type Locale } from 'date-fns';
+import { format, parseISO, type Locale } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { AccountType } from '@/types/account.types';
 import type { TransactionType } from '@/types/transaction.types';
@@ -85,4 +85,20 @@ export function formatTransactionDate(
 
   const localDate = parseTransactionLocalDate(dateStr);
   return format(localDate, formatStr, { locale: es, ...options });
+}
+
+/**
+ * Formatea una fecha/hora asegurando que timestamps ISO en UTC se representen
+ * fielmente en la zona horaria local del navegador.
+ */
+export function formatDateTime(
+  dateString?: string | null,
+  formatStr: string = 'dd MMM yyyy, HH:mm'
+): string {
+  if (!dateString) {
+    return 'Nunca utilizado';
+  }
+
+  const date = parseISO(dateString);
+  return format(date, formatStr, { locale: es });
 }
