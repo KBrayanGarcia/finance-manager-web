@@ -1,8 +1,9 @@
 import React from 'react';
-import { ArrowDownLeft, ArrowUpRight, Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { CategoryIcon } from '@/components/categories/CategoryIcon';
 import type { Category } from '@/types/category.types';
 
 interface CategoryCardProps {
@@ -26,7 +27,7 @@ export function CategoryCard({
           className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: `${displayColor}1A`, color: displayColor }}
         >
-          {isIncome ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+          <CategoryIcon icon={category.icon} type={category.type} className="w-4 h-4" />
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
