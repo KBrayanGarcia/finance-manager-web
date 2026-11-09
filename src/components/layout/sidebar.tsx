@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   LayoutDashboard,
   Wallet,
@@ -36,6 +37,7 @@ export function Sidebar({ isMobileOpen = false, onCloseMobile }: SidebarProps): 
   const router = useRouterState();
   const currentPath = router.location.pathname;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const logout = useAuthStore((state) => state.logout);
 
   const handleLinkClick = () => {
@@ -44,6 +46,7 @@ export function Sidebar({ isMobileOpen = false, onCloseMobile }: SidebarProps): 
 
   const handleLogout = () => {
     onCloseMobile?.();
+    queryClient.clear();
     logout();
     navigate({ to: '/login', replace: true });
   };
